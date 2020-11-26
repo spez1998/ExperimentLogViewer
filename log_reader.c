@@ -28,8 +28,8 @@ int main(int argc, char *argv[])
 	printf("\nYou entered: %s",raw_filename);
 	FILE *log_file = open_log_file(raw_filename,MAX_FILENAME_LENGTH);
 	char *last_line = get_last_line(&log_file);
-    strcpy(file.last_line,last_line);
-    free(last_line);
+	strcpy(file.last_line,last_line);
+	free(last_line);
 	get_time();
 	return 0;
 }
