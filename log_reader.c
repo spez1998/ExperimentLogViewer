@@ -57,7 +57,7 @@ char *get_last_line(FILE **file)
 	buff[max_line_length - 1] = '\0'; /* Terminate string */
 	char *last_newline = strrchr(buff, '\n'); /* Find last newline */
 	char *last_line = malloc(MAX_LOGFILE_LINE_LENGTH);
-    strcpy(last_line,last_newline + 1);
+	strcpy(last_line,last_newline + 1);
 	fclose(*file);
 	return last_line;
 }
