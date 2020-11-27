@@ -1,4 +1,4 @@
-#include <ctype.h>
+/* #include <ctype.h> */
 #include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,30 +7,28 @@
 
 #define MAX_FILENAME_LENGTH 28
 #define MAX_LOGFILE_LINE_LENGTH 54
+#define TIMESTAMP_LENGTH 20
 
 typedef struct {
     char name[MAX_FILENAME_LENGTH];
-    char last_line[MAX_LOGFILE_LINE_LENGTH];
+    char last_timestamp[TIMESTAMP_LENGTH];
 } file_t;
 
 void remove_spaces(char *str_trimmed, const char *str_untrimmed);
-FILE *open_log_file(char *raw_filename, size_t len_raw_filename);
-char *get_last_line(FILE **file);
-int get_time();
+FILE *open_log_file(char *raw_filename, size_t len_raw_filename, char *logfile_name);
+char *get_last_timestamp(FILE **file, file_t *logfile);
+int get_time(char *logfile_last_timestamp);
 
 int main(int argc, char *argv[])
 {
-	file_t file;
+	file_t logfile;
 	char raw_filename[MAX_FILENAME_LENGTH];
-    /* char last_line[MAX_LOGFILE_LINE_LENGTH]; */
 	printf("\nPlease enter the name of the log file.\n");
 	fgets(raw_filename,MAX_FILENAME_LENGTH,stdin);
 	printf("\nYou entered: %s",raw_filename);
-	FILE *log_file = open_log_file(raw_filename,MAX_FILENAME_LENGTH);
-	char *last_line = get_last_line(&log_file);
-	strcpy(file.last_line,last_line);
-	free(last_line);
-	get_time();
+	FILE *log_file = open_log_file(raw_filename,MAX_FILENAME_LENGTH,&logfile.name);
+	get_last_timestamp(&log_file,&logfile);
+	get_time(&logfile.last_timestamp);
 	return 0;
 }
 
@@ -48,21 +46,28 @@ void remove_spaces(char *str_trimmed, const char *str_untrimmed)
 	*str_trimmed = '\0';
 }
 
-char *get_last_line(FILE **file)
+char *get_last_timestamp(FILE **file, file_t *logfile)
 {
-	static const long max_line_length = MAX_LOGFILE_LINE_LENGTH + 1; /* Max line length + newline */
+	const unsigned int max_line_length = MAX_LOGFILE_LINE_LENGTH + 1; /* Max line length + newline */
+	char timestamp[TIMESTAMP_LENGTH];
 	char buff[max_line_length + 1]; /* Space for max line length + null term */
 	fseek(*file, -max_line_length, SEEK_END); /* Read to len(max line length) before EOF */
 	fread(buff, max_line_length - 1, 1, *file);
 	buff[max_line_length - 1] = '\0'; /* Terminate string */
 	char *last_newline = strrchr(buff, '\n'); /* Find last newline */
-	char *last_line = malloc(MAX_LOGFILE_LINE_LENGTH);
-	strcpy(last_line,last_newline + 1);
+	char *last_line = last_newline + 1; /* Jump to it */
+	/* Extracting timestamp from last line */
+	int i;
+	for(i=0;i<TIMESTAMP_LENGTH;i++)
+	{
+		timestamp[i] = last_line[i];
+	}
+	strcpy(logfile->last_timestamp,timestamp);
 	fclose(*file);
 	return last_line;
 }
 
-FILE *open_log_file(char *raw_filename, size_t len_raw_filename)
+FILE *open_log_file(char *raw_filename, size_t len_raw_filename, char *logfile_name)
 {
 	FILE *log_candidate;
 	char filename[len_raw_filename];
@@ -75,9 +80,18 @@ FILE *open_log_file(char *raw_filename, size_t len_raw_filename)
 	return log_candidate;
 }
 
-int get_time()
+int get_time(const char *logfile_last_timestamp)
 {
+	time_t now, log_time;
 	struct tm *timeinfo;
+	time(&now);
+	timeinfo = localtime(&now);
 	printf("Current local time and date: %s",asctime(timeinfo));
+	static const char time_format[] = "%d-%m-%y_%H-%M-%S";
+	struct tm tm;
+	strptime(logfile_last_timestamp,time_format,&tm);
+	log_time = mktime(&tm);
+	double timediff = difftime(now,log_time);
+	printf("\nAge of last timestamp is %f",timediff);
 	return 0;
 }
