@@ -1,9 +1,4 @@
-/* #include <ctype.h> */
-#include <dirent.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
+#include "log_reader.h"
 
 #define MAX_FILENAME_LENGTH 28
 #define MAX_LOGFILE_LINE_LENGTH 54
@@ -17,7 +12,7 @@ typedef struct {
 void remove_spaces(char *str_trimmed, const char *str_untrimmed);
 FILE *open_log_file(char *raw_filename, size_t len_raw_filename, char *logfile_name);
 char *get_last_timestamp(FILE **file, file_t *logfile);
-int get_time(char *logfile_last_timestamp);
+int logfile_age(char *logfile_last_timestamp);
 
 int main(int argc, char *argv[])
 {
@@ -26,9 +21,9 @@ int main(int argc, char *argv[])
 	printf("\nPlease enter the name of the log file.\n");
 	fgets(raw_filename,MAX_FILENAME_LENGTH,stdin);
 	printf("\nYou entered: %s",raw_filename);
-	FILE *log_file = open_log_file(raw_filename,MAX_FILENAME_LENGTH,&logfile.name);
-	get_last_timestamp(&log_file,&logfile);
-	get_time(&logfile.last_timestamp);
+	FILE *log_file = open_log_file(raw_filename,MAX_FILENAME_LENGTH,logfile.name);
+	get_last_timestamp(&log_file,logfile.name);
+	get_time(logfile.last_timestamp);
 	return 0;
 }
 
@@ -80,18 +75,34 @@ FILE *open_log_file(char *raw_filename, size_t len_raw_filename, char *logfile_n
 	return log_candidate;
 }
 
-int get_time(const char *logfile_last_timestamp)
+/* int get_time(char *last_timestamp)
 {
-	time_t now, log_time;
-	struct tm *timeinfo;
-	time(&now);
-	timeinfo = localtime(&now);
-	printf("Current local time and date: %s",asctime(timeinfo));
-	static const char time_format[] = "%d-%m-%y_%H-%M-%S";
+	time_t now = time(NULL);
+	time_t log_time;
+	char timeinfo_log_form[TIMESTAMP_LENGTH];
+	const char timestamp_format[] = "%d-%m-%Y_%H-%M-%S";
 	struct tm tm;
-	strptime(logfile_last_timestamp,time_format,&tm);
+	double diff;
+	printf("\npoo %s",ctime(&now));
+	printf("\nTrying to convert %s",last_timestamp);
+	strptime(last_timestamp,timestamp_format,&tm);
 	log_time = mktime(&tm);
-	double timediff = difftime(now,log_time);
-	printf("\nAge of last timestamp is %f",timediff);
+	printf("%s",asctime(log_time));
+	diff = difftime(now,log_time);
+	printf("\n%f",diff);
 	return 0;
+} */
+
+int get_time(char *last_timestamp)
+{
+	const char timestamp_format[] = "%d-%m-%Y_%H-%M-%S";
+	time_t rawtime, logtime;
+	struct tm logtime_tm = {0};
+	time(&rawtime);
+	printf("%s",ctime(&rawtime));
+	strptime("23-12-1998_01-02-03",timestamp_format,&logtime_tm);
+	mktime(&logtime_tm);
+	printf("\nParsed: %s",ctime(&logtime_tm));
+	double diff = difftime(&logtime_tm,rawtime);
+	printf("\n%f",diff);
 }
