@@ -22,8 +22,8 @@ int main(int argc, char *argv[])
 	fgets(raw_filename,MAX_FILENAME_LENGTH,stdin);
 	printf("\nYou entered: %s",raw_filename);
 	FILE *log_file = open_log_file(raw_filename,MAX_FILENAME_LENGTH,logfile.name);
-	get_last_timestamp(&log_file,logfile.name);
-	get_time(logfile.last_timestamp);
+	get_last_timestamp(&log_file,&logfile);
+	logfile_age(logfile.last_timestamp);
 	return 0;
 }
 
@@ -75,23 +75,8 @@ FILE *open_log_file(char *raw_filename, size_t len_raw_filename, char *logfile_n
 	return log_candidate;
 }
 
-/* int get_time(char *last_timestamp)
-{
-	time_t now = time(NULL);
-	time_t log_time;
-	char timeinfo_log_form[TIMESTAMP_LENGTH];
-	const char timestamp_format[] = "%d-%m-%Y_%H-%M-%S";
-	struct tm tm;
-	double diff;
-	printf("\npoo %s",ctime(&now));
-	printf("\nTrying to convert %s",last_timestamp);
-	strptime(last_timestamp,timestamp_format,&tm);
-	log_time = mktime(&tm);
-	printf("%s",asctime(log_time));
-	diff = difftime(now,log_time);
-	printf("\n%f",diff);
-	return 0;
-} */
+/* strptime doesn't work for some reason */
+/* ignore below get_time function */
 
 int get_time(char *last_timestamp)
 {
@@ -105,4 +90,16 @@ int get_time(char *last_timestamp)
 	printf("\nParsed: %s",ctime(&logtime_tm));
 	double diff = difftime(&logtime_tm,rawtime);
 	printf("\n%f",diff);
+}
+
+int logfile_age(char *last_timestamp)
+{
+	time_t rawtime;
+	struct tm *time_now;
+	const char timestamp_format[] = "%d-%m-%Y_%H-%M-%S";
+	char cur_time[TIMESTAMP_LENGTH];
+	time(&rawtime);
+	time_now = localtime(&rawtime);
+	strftime(cur_time,TIMESTAMP_LENGTH,timestamp_format,&time_now);
+	printf("%s",cur_time);
 }
