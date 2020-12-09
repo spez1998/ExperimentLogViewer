@@ -27,8 +27,9 @@ typedef struct {
 } file_t;
 
 void usage(char *progname, int opt);
-int logfile_last_mod(options_t *options, file_t *file);
+int logfile_last_mod(options_t *options);
 int weekday(int day, int month, int year);
+int do_more_stuff(void);
 
 int main(int argc, char *argv[])
 {
@@ -56,7 +57,7 @@ int main(int argc, char *argv[])
                 break;
         }
 
-    if (logfile_last_mod(&options,&file) != EXIT_SUCCESS)
+    if (logfile_last_mod(&options) != EXIT_SUCCESS)
     {
         perror(ERR_LOGFILE_LAST_MOD);
         exit(EXIT_FAILURE);
@@ -71,7 +72,7 @@ void usage(char *progname, int opt)
     exit(EXIT_FAILURE);
 }
 
-int logfile_last_mod(options_t *options, file_t *file)
+int logfile_last_mod(options_t *options)
 {
     if (!options)
     {
@@ -125,6 +126,7 @@ int logfile_last_mod(options_t *options, file_t *file)
         printf("\nSelected log file last modified more than 30 seconds ago!");
         printf("\nPress Enter to continue anyway ");
         getchar();
+        do_more_stuff();
     }
     else if(2 < diff_t < 30)
     {
@@ -132,6 +134,7 @@ int logfile_last_mod(options_t *options, file_t *file)
         printf("\nCheck manually for more recent edits.");
         printf("\nPress Enter to continue ");
         getchar();
+        do_more_stuff();
     }
     else
     {
@@ -139,6 +142,7 @@ int logfile_last_mod(options_t *options, file_t *file)
         printf("\nExperiment running.");
         printf("Press Enter to continue ");
         getchar();
+        do_more_stuff();
     }
     
     return EXIT_SUCCESS;
@@ -148,4 +152,9 @@ int weekday(int day, int month, int year)
 {
     int wkday = (day += month < 3 ? year-- : year - 2, 23*month/9 + day + 4 + year/4- year/100 + year/400)%7;  
     return wkday;
+}
+
+int do_more_stuff(void)
+{
+    return EXIT_SUCCESS;
 }
